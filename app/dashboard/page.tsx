@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import { Plus, X, Trash2, Pencil, LogOut, Play, Pause, RotateCcw, Coffee, Focus } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { Toaster, toast } from 'react-hot-toast'
 import {
   DndContext,
   DragEndEvent,
@@ -23,7 +24,7 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 
-// ========== Pomodoro con sonido ==========
+// ========== Pomodoro ==========
 function PomodoroTimer() {
   const [mode, setMode] = useState<'focus' | 'break'>('focus')
   const [secondsLeft, setSecondsLeft] = useState(25 * 60)
@@ -33,22 +34,17 @@ function PomodoroTimer() {
   const FOCUS_TIME = 25 * 60
   const BREAK_TIME = 5 * 60
 
-  // Sonido simple usando Web Audio API
   const playNotificationSound = () => {
     try {
       const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)()
       const oscillator = audioCtx.createOscillator()
       const gainNode = audioCtx.createGain()
-
       oscillator.connect(gainNode)
       gainNode.connect(audioCtx.destination)
-
       oscillator.frequency.value = 880
       oscillator.type = 'sine'
-
       gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime)
       gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5)
-
       oscillator.start(audioCtx.currentTime)
       oscillator.stop(audioCtx.currentTime + 0.5)
     } catch (e) {
@@ -95,8 +91,8 @@ function PomodoroTimer() {
 
   return (
     <div className={`flex items-center gap-3 px-3 py-1.5 rounded-xl border transition-all ${
-      mode === 'focus' 
-        ? 'bg-violet-500/10 border-violet-500/30' 
+      mode === 'focus'
+        ? 'bg-violet-500/10 border-violet-500/30'
         : 'bg-emerald-500/10 border-emerald-500/30'
     }`}>
       <div className="flex items-center gap-1.5">
@@ -120,8 +116,8 @@ function PomodoroTimer() {
         <button
           onClick={toggleTimer}
           className={`p-1.5 rounded-lg transition-colors ${
-            mode === 'focus' 
-              ? 'hover:bg-violet-500/20 text-violet-300' 
+            mode === 'focus'
+              ? 'hover:bg-violet-500/20 text-violet-300'
               : 'hover:bg-emerald-500/20 text-emerald-300'
           }`}
         >
@@ -229,7 +225,15 @@ function EditTaskModal({
 }
 
 // ========== Tarea ==========
-function TaskCard({ task, onDelete, onEdit }: { task: any; onDelete: (id: string) => void; onEdit: (task: any) => void }) {
+function TaskCard({
+  task,
+  onDelete,
+  onEdit,
+}: {
+  task: any
+  onDelete: (id: string) => void
+  onEdit: (task: any) => void
+}) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: task.id,
     data: { type: 'Task', task },
@@ -365,6 +369,13 @@ function ColumnContainer({
             ))}
           </AnimatePresence>
         </SortableContext>
+
+        {tasks.length === 0 && addingTaskInColumn !== column.id && (
+          <div className="text-center py-8 px-3">
+            <p className="text-zinc-600 text-sm">No hay tareas</p>
+            <p className="text-zinc-700 text-xs mt-1">Agrega la primera</p>
+          </div>
+        )}
 
         {addingTaskInColumn === column.id ? (
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-2">
@@ -519,6 +530,9 @@ export default function DashboardPage() {
       setColumns([...columns, data])
       setNewColumnTitle('')
       setShowColumnInput(false)
+      toast.success('Columna creada')
+    } else {
+      toast.error('No se pudo crear la columna')
     }
   }
 
@@ -541,12 +555,20 @@ export default function DashboardPage() {
       setTasks([...tasks, data])
       setNewTaskTitle('')
       setAddingTaskInColumn(null)
+      toast.success('Tarea creada')
+    } else {
+      toast.error('No se pudo crear la tarea')
     }
   }
 
   const handleDeleteTask = async (taskId: string) => {
     const { error } = await supabase.from('tasks').delete().eq('id', taskId)
-    if (!error) setTasks(tasks.filter((t) => t.id !== taskId))
+    if (!error) {
+      setTasks(tasks.filter((t) => t.id !== taskId))
+      toast.success('Tarea eliminada')
+    } else {
+      toast.error('No se pudo eliminar la tarea')
+    }
   }
 
   const handleDeleteColumn = async (columnId: string) => {
@@ -555,6 +577,9 @@ export default function DashboardPage() {
     if (!error) {
       setColumns(columns.filter((c) => c.id !== columnId))
       setTasks(tasks.filter((t) => t.column_id !== columnId))
+      toast.success('Columna eliminada')
+    } else {
+      toast.error('No se pudo eliminar la columna')
     }
   }
 
@@ -562,6 +587,7 @@ export default function DashboardPage() {
     const { error } = await supabase.from('columns').update({ title: newTitle }).eq('id', columnId)
     if (!error) {
       setColumns(columns.map((c) => (c.id === columnId ? { ...c, title: newTitle } : c)))
+      toast.success('Columna actualizada')
     }
   }
 
@@ -569,10 +595,12 @@ export default function DashboardPage() {
     const { error } = await supabase.from('tasks').update({ title, description }).eq('id', taskId)
     if (!error) {
       setTasks(tasks.map((t) => (t.id === taskId ? { ...t, title, description } : t)))
+      toast.success('Tarea actualizada')
+    } else {
+      toast.error('No se pudo actualizar la tarea')
     }
   }
 
-  // ========== Editar nombre del tablero ==========
   const handleSaveBoardTitle = async () => {
     if (!board || !boardTitleInput.trim() || boardTitleInput.trim() === board.title) {
       setIsEditingBoardTitle(false)
@@ -586,6 +614,7 @@ export default function DashboardPage() {
 
     if (!error) {
       setBoard({ ...board, title: boardTitleInput.trim() })
+      toast.success('Tablero actualizado')
     }
     setIsEditingBoardTitle(false)
   }
@@ -637,7 +666,18 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-zinc-950 via-zinc-950 to-fuchsia-900 text-white">
+    <div className="min-h-screen bg-gradient-to-br from-zinc-950 via-zinc-950 to-violet-950/40 text-white">
+      <Toaster
+        position="bottom-right"
+        toastOptions={{
+          style: {
+            background: '#18181b',
+            color: '#fff',
+            border: '1px solid #3f3f46',
+          },
+        }}
+      />
+
       <header className="border-b border-zinc-800/60 bg-zinc-950/70 backdrop-blur-md sticky top-0 z-20">
         <div className="px-6 py-3 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
