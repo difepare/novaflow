@@ -1,10 +1,38 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
-import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 
-export default function Home() {
+export default function LoginPage() {
   const [loading, setLoading] = useState(false)
+  const [checkingSession, setCheckingSession] = useState(true)
+  const router = useRouter()
+
+  // Revisar si ya hay sesión al cargar
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      
+      if (session) {
+        router.replace('/dashboard')
+        return
+      }
+      
+      setCheckingSession(false)
+    }
+
+    checkSession()
+
+    // Escuchar cambios de autenticación (importante para el retorno de Google)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session) {
+        router.replace('/dashboard')
+      }
+    })
+
+    return () => subscription.unsubscribe()
+  }, [router])
 
   const handleGoogleLogin = async () => {
     try {
@@ -19,12 +47,23 @@ export default function Home() {
       if (error) {
         console.error('Error al iniciar sesión:', error.message)
         alert('Hubo un error al iniciar sesión con Google')
+        setLoading(false)
       }
     } catch (error) {
       console.error(error)
-    } finally {
       setLoading(false)
     }
+  }
+
+  if (checkingSession) {
+    return (
+      <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-2 border-violet-500 border-t-transparent rounded-full animate-spin" />
+          <p className="text-zinc-400 text-sm">Verificando sesión...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -52,7 +91,11 @@ export default function Home() {
             disabled={loading}
             className="w-full flex items-center justify-center gap-3 bg-white text-zinc-900 font-medium py-3.5 px-4 rounded-xl hover:bg-zinc-100 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            {loading ? 'Conectando...' : (
+            {loading ? (
+              <span className="flex items-center gap-2">
+                Conectando...
+              </span>
+            ) : (
               <>
                 <svg className="w-5 h-5" viewBox="0 0 24 24">
                   <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
