@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
-import { Plus, X, Trash2, Pencil, LogOut, Play, Pause, RotateCcw, Coffee, Focus } from 'lucide-react'
+import { Plus, X, Trash2, Pencil, LogOut, Play, Pause, RotateCcw, Coffee, Focus, ChevronDown, Layout } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Toaster, toast } from 'react-hot-toast'
 import {
@@ -47,9 +47,7 @@ function PomodoroTimer() {
       gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5)
       oscillator.start(audioCtx.currentTime)
       oscillator.stop(audioCtx.currentTime + 0.5)
-    } catch (e) {
-      console.log('No se pudo reproducir el sonido')
-    }
+    } catch (e) {}
   }
 
   useEffect(() => {
@@ -91,78 +89,35 @@ function PomodoroTimer() {
 
   return (
     <div className={`flex items-center gap-3 px-3 py-1.5 rounded-xl border transition-all ${
-      mode === 'focus'
-        ? 'bg-violet-500/10 border-violet-500/30'
-        : 'bg-emerald-500/10 border-emerald-500/30'
+      mode === 'focus' ? 'bg-violet-500/10 border-violet-500/30' : 'bg-emerald-500/10 border-emerald-500/30'
     }`}>
       <div className="flex items-center gap-1.5">
-        {mode === 'focus' ? (
-          <Focus size={14} className="text-violet-400" />
-        ) : (
-          <Coffee size={14} className="text-emerald-400" />
-        )}
+        {mode === 'focus' ? <Focus size={14} className="text-violet-400" /> : <Coffee size={14} className="text-emerald-400" />}
         <span className={`text-xs font-medium ${mode === 'focus' ? 'text-violet-300' : 'text-emerald-300'}`}>
           {mode === 'focus' ? 'Foco' : 'Descanso'}
         </span>
       </div>
-
-      <div className={`font-mono text-sm font-semibold tabular-nums ${
-        mode === 'focus' ? 'text-violet-200' : 'text-emerald-200'
-      }`}>
+      <div className={`font-mono text-sm font-semibold tabular-nums ${mode === 'focus' ? 'text-violet-200' : 'text-emerald-200'}`}>
         {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
       </div>
-
       <div className="flex items-center gap-1">
-        <button
-          onClick={toggleTimer}
-          className={`p-1.5 rounded-lg transition-colors ${
-            mode === 'focus'
-              ? 'hover:bg-violet-500/20 text-violet-300'
-              : 'hover:bg-emerald-500/20 text-emerald-300'
-          }`}
-        >
+        <button onClick={toggleTimer} className={`p-1.5 rounded-lg transition-colors ${mode === 'focus' ? 'hover:bg-violet-500/20 text-violet-300' : 'hover:bg-emerald-500/20 text-emerald-300'}`}>
           {isRunning ? <Pause size={14} /> : <Play size={14} />}
         </button>
-        <button
-          onClick={resetTimer}
-          className="p-1.5 rounded-lg hover:bg-zinc-700 text-zinc-400 hover:text-white transition-colors"
-        >
+        <button onClick={resetTimer} className="p-1.5 rounded-lg hover:bg-zinc-700 text-zinc-400 hover:text-white transition-colors">
           <RotateCcw size={14} />
         </button>
       </div>
-
       <div className="hidden sm:flex items-center gap-1 ml-1 border-l border-zinc-700 pl-2">
-        <button
-          onClick={() => switchMode('focus')}
-          className={`text-xs px-2 py-1 rounded-md transition-colors ${
-            mode === 'focus' ? 'bg-violet-500/30 text-violet-200' : 'text-zinc-500 hover:text-zinc-300'
-          }`}
-        >
-          25m
-        </button>
-        <button
-          onClick={() => switchMode('break')}
-          className={`text-xs px-2 py-1 rounded-md transition-colors ${
-            mode === 'break' ? 'bg-emerald-500/30 text-emerald-200' : 'text-zinc-500 hover:text-zinc-300'
-          }`}
-        >
-          5m
-        </button>
+        <button onClick={() => switchMode('focus')} className={`text-xs px-2 py-1 rounded-md transition-colors ${mode === 'focus' ? 'bg-violet-500/30 text-violet-200' : 'text-zinc-500 hover:text-zinc-300'}`}>25m</button>
+        <button onClick={() => switchMode('break')} className={`text-xs px-2 py-1 rounded-md transition-colors ${mode === 'break' ? 'bg-emerald-500/30 text-emerald-200' : 'text-zinc-500 hover:text-zinc-300'}`}>5m</button>
       </div>
     </div>
   )
 }
 
 // ========== Modal editar tarea ==========
-function EditTaskModal({
-  task,
-  onClose,
-  onSave,
-}: {
-  task: any
-  onClose: () => void
-  onSave: (id: string, title: string, description: string) => void
-}) {
+function EditTaskModal({ task, onClose, onSave }: { task: any; onClose: () => void; onSave: (id: string, title: string, description: string) => void }) {
   const [title, setTitle] = useState(task.title)
   const [description, setDescription] = useState(task.description || '')
 
@@ -174,50 +129,24 @@ function EditTaskModal({
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="bg-zinc-900 border border-zinc-700 rounded-2xl w-full max-w-md p-6 shadow-2xl"
-      >
+      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-zinc-900 border border-zinc-700 rounded-2xl w-full max-w-md p-6 shadow-2xl">
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-lg font-semibold text-white">Editar tarea</h2>
-          <button onClick={onClose} className="text-zinc-400 hover:text-white p-1 rounded-lg hover:bg-zinc-800 transition-colors">
-            <X size={18} />
-          </button>
+          <button onClick={onClose} className="text-zinc-400 hover:text-white p-1 rounded-lg hover:bg-zinc-800 transition-colors"><X size={18} /></button>
         </div>
-
         <div className="space-y-4">
           <div>
             <label className="block text-sm text-zinc-400 mb-1.5">Título</label>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-violet-500"
-              autoFocus
-              onKeyDown={(e) => e.key === 'Enter' && handleSave()}
-            />
+            <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-violet-500" autoFocus onKeyDown={(e) => e.key === 'Enter' && handleSave()} />
           </div>
-
           <div>
             <label className="block text-sm text-zinc-400 mb-1.5">Descripción (opcional)</label>
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              rows={4}
-              className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-violet-500 resize-none"
-              placeholder="Agrega más detalles sobre esta tarea..."
-            />
+            <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={4} className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-violet-500 resize-none" placeholder="Agrega más detalles..." />
           </div>
         </div>
-
         <div className="flex gap-3 mt-6">
-          <button onClick={onClose} className="flex-1 px-4 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-xl text-sm transition-colors">
-            Cancelar
-          </button>
-          <button onClick={handleSave} className="flex-1 px-4 py-2.5 bg-violet-600 hover:bg-violet-500 text-white rounded-xl text-sm font-medium transition-colors">
-            Guardar
-          </button>
+          <button onClick={onClose} className="flex-1 px-4 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-xl text-sm transition-colors">Cancelar</button>
+          <button onClick={handleSave} className="flex-1 px-4 py-2.5 bg-violet-600 hover:bg-violet-500 text-white rounded-xl text-sm font-medium transition-colors">Guardar</button>
         </div>
       </motion.div>
     </div>
@@ -225,54 +154,18 @@ function EditTaskModal({
 }
 
 // ========== Tarea ==========
-function TaskCard({
-  task,
-  onDelete,
-  onEdit,
-}: {
-  task: any
-  onDelete: (id: string) => void
-  onEdit: (task: any) => void
-}) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-    id: task.id,
-    data: { type: 'Task', task },
-  })
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.4 : 1,
-  }
+function TaskCard({ task, onDelete, onEdit }: { task: any; onDelete: (id: string) => void; onEdit: (task: any) => void }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: task.id, data: { type: 'Task', task } })
+  const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.4 : 1 }
 
   return (
-    <motion.div
-      ref={setNodeRef}
-      style={style}
-      {...attributes}
-      {...listeners}
-      layout
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.95 }}
-      onClick={() => onEdit(task)}
-      className="bg-zinc-800/80 backdrop-blur border border-zinc-700/80 rounded-xl p-3.5 text-sm hover:border-violet-500/50 hover:bg-zinc-800 transition-all group/task cursor-pointer shadow-sm"
-    >
+    <motion.div ref={setNodeRef} style={style} {...attributes} {...listeners} layout initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }} onClick={() => onEdit(task)} className="bg-zinc-800/80 backdrop-blur border border-zinc-700/80 rounded-xl p-3.5 text-sm hover:border-violet-500/50 hover:bg-zinc-800 transition-all group/task cursor-pointer shadow-sm">
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
           <p className="leading-relaxed text-white">{task.title}</p>
-          {task.description && (
-            <p className="text-zinc-500 text-xs mt-1.5 line-clamp-2">{task.description}</p>
-          )}
+          {task.description && <p className="text-zinc-500 text-xs mt-1.5 line-clamp-2">{task.description}</p>}
         </div>
-        <button
-          onClick={(e) => {
-            e.stopPropagation()
-            onDelete(task.id)
-          }}
-          onPointerDown={(e) => e.stopPropagation()}
-          className="opacity-0 group-hover/task:opacity-100 text-zinc-500 hover:text-red-400 transition-all shrink-0 p-0.5"
-        >
+        <button onClick={(e) => { e.stopPropagation(); onDelete(task.id) }} onPointerDown={(e) => e.stopPropagation()} className="opacity-0 group-hover/task:opacity-100 text-zinc-500 hover:text-red-400 transition-all shrink-0 p-0.5">
           <Trash2 size={14} />
         </button>
       </div>
@@ -281,92 +174,37 @@ function TaskCard({
 }
 
 // ========== Columna ==========
-function ColumnContainer({
-  column,
-  tasks,
-  onDeleteColumn,
-  onDeleteTask,
-  onRenameColumn,
-  onEditTask,
-  addingTaskInColumn,
-  setAddingTaskInColumn,
-  newTaskTitle,
-  setNewTaskTitle,
-  onCreateTask,
-}: any) {
-  const { setNodeRef, isOver } = useDroppable({
-    id: column.id,
-    data: { type: 'Column', column },
-  })
-
+function ColumnContainer({ column, tasks, onDeleteColumn, onDeleteTask, onRenameColumn, onEditTask, addingTaskInColumn, setAddingTaskInColumn, newTaskTitle, setNewTaskTitle, onCreateTask }: any) {
+  const { setNodeRef, isOver } = useDroppable({ id: column.id, data: { type: 'Column', column } })
   const [isEditing, setIsEditing] = useState(false)
   const [editTitle, setEditTitle] = useState(column.title)
 
   const handleSaveRename = () => {
-    if (editTitle.trim() && editTitle.trim() !== column.title) {
-      onRenameColumn(column.id, editTitle.trim())
-    }
+    if (editTitle.trim() && editTitle.trim() !== column.title) onRenameColumn(column.id, editTitle.trim())
     setIsEditing(false)
   }
 
   return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className={`w-80 bg-zinc-900/70 backdrop-blur-sm rounded-2xl border flex flex-col group/column transition-all duration-200 ${
-        isOver ? 'border-violet-500 shadow-lg shadow-violet-500/10' : 'border-zinc-800/80'
-      }`}
-    >
+    <motion.div layout initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className={`w-80 bg-zinc-900/70 backdrop-blur-sm rounded-2xl border flex flex-col group/column transition-all duration-200 ${isOver ? 'border-violet-500 shadow-lg shadow-violet-500/10' : 'border-zinc-800/80'}`}>
       <div className="p-4 border-b border-zinc-800/60 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 flex-1 min-w-0">
           {isEditing ? (
-            <input
-              type="text"
-              value={editTitle}
-              onChange={(e) => setEditTitle(e.target.value)}
-              onBlur={handleSaveRename}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') handleSaveRename()
-                if (e.key === 'Escape') {
-                  setEditTitle(column.title)
-                  setIsEditing(false)
-                }
-              }}
-              className="bg-zinc-800 border border-violet-500 rounded-lg px-2.5 py-1.5 text-sm text-white w-full focus:outline-none"
-              autoFocus
-            />
+            <input type="text" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} onBlur={handleSaveRename} onKeyDown={(e) => { if (e.key === 'Enter') handleSaveRename(); if (e.key === 'Escape') { setEditTitle(column.title); setIsEditing(false) } }} className="bg-zinc-800 border border-violet-500 rounded-lg px-2.5 py-1.5 text-sm text-white w-full focus:outline-none" autoFocus />
           ) : (
-            <h3
-              className="font-semibold text-white truncate cursor-pointer hover:text-violet-300 transition-colors"
-              onDoubleClick={() => setIsEditing(true)}
-            >
-              {column.title}
-            </h3>
+            <h3 className="font-semibold text-white truncate cursor-pointer hover:text-violet-300 transition-colors" onDoubleClick={() => setIsEditing(true)}>{column.title}</h3>
           )}
-          <span className="text-xs text-zinc-400 bg-zinc-800/80 px-2 py-0.5 rounded-full shrink-0 font-medium">
-            {tasks.length}
-          </span>
+          <span className="text-xs text-zinc-400 bg-zinc-800/80 px-2 py-0.5 rounded-full shrink-0 font-medium">{tasks.length}</span>
         </div>
-
         <div className="flex items-center gap-1 opacity-0 group-hover/column:opacity-100 transition-all">
-          {!isEditing && (
-            <button onClick={() => setIsEditing(true)} className="text-zinc-500 hover:text-violet-400 p-1.5 rounded-lg hover:bg-zinc-800 transition-all">
-              <Pencil size={14} />
-            </button>
-          )}
-          <button onClick={() => onDeleteColumn(column.id)} className="text-zinc-500 hover:text-red-400 p-1.5 rounded-lg hover:bg-zinc-800 transition-all">
-            <Trash2 size={14} />
-          </button>
+          {!isEditing && <button onClick={() => setIsEditing(true)} className="text-zinc-500 hover:text-violet-400 p-1.5 rounded-lg hover:bg-zinc-800 transition-all"><Pencil size={14} /></button>}
+          <button onClick={() => onDeleteColumn(column.id)} className="text-zinc-500 hover:text-red-400 p-1.5 rounded-lg hover:bg-zinc-800 transition-all"><Trash2 size={14} /></button>
         </div>
       </div>
 
       <div ref={setNodeRef} className="p-3 flex-1 space-y-2.5 min-h-[160px]">
         <SortableContext items={tasks.map((t: any) => t.id)} strategy={verticalListSortingStrategy}>
           <AnimatePresence>
-            {tasks.map((task: any) => (
-              <TaskCard key={task.id} task={task} onDelete={onDeleteTask} onEdit={onEditTask} />
-            ))}
+            {tasks.map((task: any) => <TaskCard key={task.id} task={task} onDelete={onDeleteTask} onEdit={onEditTask} />)}
           </AnimatePresence>
         </SortableContext>
 
@@ -379,42 +217,15 @@ function ColumnContainer({
 
         {addingTaskInColumn === column.id ? (
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-2">
-            <textarea
-              value={newTaskTitle}
-              onChange={(e) => setNewTaskTitle(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault()
-                  onCreateTask(column.id)
-                }
-              }}
-              placeholder="Escribe el título de la tarea..."
-              className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2.5 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-violet-500 resize-none"
-              rows={2}
-              autoFocus
-            />
+            <textarea value={newTaskTitle} onChange={(e) => setNewTaskTitle(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); onCreateTask(column.id) } }} placeholder="Escribe el título de la tarea..." className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2.5 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-violet-500 resize-none" rows={2} autoFocus />
             <div className="flex gap-2">
-              <button onClick={() => onCreateTask(column.id)} className="flex-1 bg-violet-600 hover:bg-violet-500 text-white text-sm py-2 rounded-xl transition-colors font-medium">
-                Agregar
-              </button>
-              <button
-                onClick={() => {
-                  setAddingTaskInColumn(null)
-                  setNewTaskTitle('')
-                }}
-                className="px-3 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-xl transition-colors"
-              >
-                <X size={16} />
-              </button>
+              <button onClick={() => onCreateTask(column.id)} className="flex-1 bg-violet-600 hover:bg-violet-500 text-white text-sm py-2 rounded-xl transition-colors font-medium">Agregar</button>
+              <button onClick={() => { setAddingTaskInColumn(null); setNewTaskTitle('') }} className="px-3 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-xl transition-colors"><X size={16} /></button>
             </div>
           </motion.div>
         ) : (
-          <button
-            onClick={() => setAddingTaskInColumn(column.id)}
-            className="w-full flex items-center gap-2 text-zinc-500 hover:text-white text-sm py-2.5 px-3 rounded-xl hover:bg-zinc-800/60 transition-all border border-transparent hover:border-zinc-700"
-          >
-            <Plus size={16} />
-            Agregar tarea
+          <button onClick={() => setAddingTaskInColumn(column.id)} className="w-full flex items-center gap-2 text-zinc-500 hover:text-white text-sm py-2.5 px-3 rounded-xl hover:bg-zinc-800/60 transition-all border border-transparent hover:border-zinc-700">
+            <Plus size={16} /> Agregar tarea
           </button>
         )}
       </div>
@@ -425,12 +236,16 @@ function ColumnContainer({
 // ========== Página principal ==========
 export default function DashboardPage() {
   const [user, setUser] = useState<any>(null)
+  const [boards, setBoards] = useState<any[]>([])
   const [board, setBoard] = useState<any>(null)
   const [columns, setColumns] = useState<any[]>([])
   const [tasks, setTasks] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [activeTask, setActiveTask] = useState<any>(null)
   const [editingTask, setEditingTask] = useState<any>(null)
+  const [showBoardMenu, setShowBoardMenu] = useState(false)
+  const [showNewBoardInput, setShowNewBoardInput] = useState(false)
+  const [newBoardTitle, setNewBoardTitle] = useState('')
   const [isEditingBoardTitle, setIsEditingBoardTitle] = useState(false)
   const [boardTitleInput, setBoardTitleInput] = useState('')
 
@@ -440,12 +255,58 @@ export default function DashboardPage() {
   const [newTaskTitle, setNewTaskTitle] = useState('')
 
   const router = useRouter()
+  const boardMenuRef = useRef<HTMLDivElement>(null)
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: { distance: 8 },
-    })
-  )
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }))
+
+  // Cerrar menú al hacer click fuera
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (boardMenuRef.current && !boardMenuRef.current.contains(e.target as Node)) {
+        setShowBoardMenu(false)
+        setShowNewBoardInput(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  // Cargar tablero (columnas + tareas)
+  const loadBoardData = async (selectedBoard: any) => {
+    setBoard(selectedBoard)
+    setBoardTitleInput(selectedBoard.title)
+    setColumns([])
+    setTasks([])
+
+    const { data: cols } = await supabase
+      .from('columns')
+      .select('*')
+      .eq('board_id', selectedBoard.id)
+      .order('position', { ascending: true })
+
+    if (cols && cols.length > 0) {
+      setColumns(cols)
+    } else {
+      const defaultColumns = [
+        { title: 'Por hacer', position: 0 },
+        { title: 'En progreso', position: 1 },
+        { title: 'Hecho', position: 2 },
+      ]
+      const { data: createdCols } = await supabase
+        .from('columns')
+        .insert(defaultColumns.map((col) => ({ ...col, board_id: selectedBoard.id })))
+        .select()
+      if (createdCols) setColumns(createdCols)
+    }
+
+    const { data: existingTasks } = await supabase
+      .from('tasks')
+      .select('*')
+      .eq('board_id', selectedBoard.id)
+      .order('position', { ascending: true })
+
+    if (existingTasks) setTasks(existingTasks)
+  }
 
   useEffect(() => {
     const init = async () => {
@@ -456,56 +317,25 @@ export default function DashboardPage() {
       }
       setUser(user)
 
-      let currentBoard = null
-      const { data: existingBoards } = await supabase
+      const { data: userBoards } = await supabase
         .from('boards')
         .select('*')
         .eq('owner_id', user.id)
-        .limit(1)
+        .order('created_at', { ascending: true })
 
-      if (existingBoards && existingBoards.length > 0) {
-        currentBoard = existingBoards[0]
+      if (userBoards && userBoards.length > 0) {
+        setBoards(userBoards)
+        await loadBoardData(userBoards[0])
       } else {
         const { data: newBoard } = await supabase
           .from('boards')
           .insert({ title: 'Mi Tablero', owner_id: user.id })
           .select()
           .single()
-        currentBoard = newBoard
-      }
-
-      setBoard(currentBoard)
-      if (currentBoard) setBoardTitleInput(currentBoard.title)
-
-      if (currentBoard) {
-        const { data: cols } = await supabase
-          .from('columns')
-          .select('*')
-          .eq('board_id', currentBoard.id)
-          .order('position', { ascending: true })
-
-        if (cols && cols.length > 0) {
-          setColumns(cols)
-        } else {
-          const defaultColumns = [
-            { title: 'Por hacer', position: 0 },
-            { title: 'En progreso', position: 1 },
-            { title: 'Hecho', position: 2 },
-          ]
-          const { data: createdCols } = await supabase
-            .from('columns')
-            .insert(defaultColumns.map((col) => ({ ...col, board_id: currentBoard.id })))
-            .select()
-          if (createdCols) setColumns(createdCols)
+        if (newBoard) {
+          setBoards([newBoard])
+          await loadBoardData(newBoard)
         }
-
-        const { data: existingTasks } = await supabase
-          .from('tasks')
-          .select('*')
-          .eq('board_id', currentBoard.id)
-          .order('position', { ascending: true })
-
-        if (existingTasks) setTasks(existingTasks)
       }
 
       setLoading(false)
@@ -514,15 +344,42 @@ export default function DashboardPage() {
     init()
   }, [router])
 
+  const handleCreateBoard = async () => {
+    if (!newBoardTitle.trim() || !user) return
+
+    const { data, error } = await supabase
+      .from('boards')
+      .insert({ title: newBoardTitle.trim(), owner_id: user.id })
+      .select()
+      .single()
+
+    if (!error && data) {
+      setBoards([...boards, data])
+      await loadBoardData(data)
+      setNewBoardTitle('')
+      setShowNewBoardInput(false)
+      setShowBoardMenu(false)
+      toast.success('Tablero creado')
+    } else {
+      toast.error('No se pudo crear el tablero')
+    }
+  }
+
+  const handleSwitchBoard = async (selected: any) => {
+    if (selected.id === board?.id) {
+      setShowBoardMenu(false)
+      return
+    }
+    setShowBoardMenu(false)
+    await loadBoardData(selected)
+    toast.success(`Cambiaste a: ${selected.title}`)
+  }
+
   const handleCreateColumn = async () => {
     if (!newColumnTitle.trim() || !board) return
     const { data, error } = await supabase
       .from('columns')
-      .insert({
-        title: newColumnTitle.trim(),
-        board_id: board.id,
-        position: columns.length,
-      })
+      .insert({ title: newColumnTitle.trim(), board_id: board.id, position: columns.length })
       .select()
       .single()
 
@@ -531,23 +388,15 @@ export default function DashboardPage() {
       setNewColumnTitle('')
       setShowColumnInput(false)
       toast.success('Columna creada')
-    } else {
-      toast.error('No se pudo crear la columna')
-    }
+    } else toast.error('No se pudo crear la columna')
   }
 
   const handleCreateTask = async (columnId: string) => {
     if (!newTaskTitle.trim() || !board) return
     const columnTasks = tasks.filter((t) => t.column_id === columnId)
-
     const { data, error } = await supabase
       .from('tasks')
-      .insert({
-        title: newTaskTitle.trim(),
-        column_id: columnId,
-        board_id: board.id,
-        position: columnTasks.length,
-      })
+      .insert({ title: newTaskTitle.trim(), column_id: columnId, board_id: board.id, position: columnTasks.length })
       .select()
       .single()
 
@@ -556,9 +405,7 @@ export default function DashboardPage() {
       setNewTaskTitle('')
       setAddingTaskInColumn(null)
       toast.success('Tarea creada')
-    } else {
-      toast.error('No se pudo crear la tarea')
-    }
+    } else toast.error('No se pudo crear la tarea')
   }
 
   const handleDeleteTask = async (taskId: string) => {
@@ -566,9 +413,7 @@ export default function DashboardPage() {
     if (!error) {
       setTasks(tasks.filter((t) => t.id !== taskId))
       toast.success('Tarea eliminada')
-    } else {
-      toast.error('No se pudo eliminar la tarea')
-    }
+    } else toast.error('No se pudo eliminar la tarea')
   }
 
   const handleDeleteColumn = async (columnId: string) => {
@@ -578,9 +423,7 @@ export default function DashboardPage() {
       setColumns(columns.filter((c) => c.id !== columnId))
       setTasks(tasks.filter((t) => t.column_id !== columnId))
       toast.success('Columna eliminada')
-    } else {
-      toast.error('No se pudo eliminar la columna')
-    }
+    } else toast.error('No se pudo eliminar la columna')
   }
 
   const handleRenameColumn = async (columnId: string, newTitle: string) => {
@@ -596,9 +439,7 @@ export default function DashboardPage() {
     if (!error) {
       setTasks(tasks.map((t) => (t.id === taskId ? { ...t, title, description } : t)))
       toast.success('Tarea actualizada')
-    } else {
-      toast.error('No se pudo actualizar la tarea')
-    }
+    } else toast.error('No se pudo actualizar la tarea')
   }
 
   const handleSaveBoardTitle = async () => {
@@ -606,14 +447,11 @@ export default function DashboardPage() {
       setIsEditingBoardTitle(false)
       return
     }
-
-    const { error } = await supabase
-      .from('boards')
-      .update({ title: boardTitleInput.trim() })
-      .eq('id', board.id)
-
+    const { error } = await supabase.from('boards').update({ title: boardTitleInput.trim() }).eq('id', board.id)
     if (!error) {
-      setBoard({ ...board, title: boardTitleInput.trim() })
+      const updated = { ...board, title: boardTitleInput.trim() }
+      setBoard(updated)
+      setBoards(boards.map((b) => (b.id === board.id ? updated : b)))
       toast.success('Tablero actualizado')
     }
     setIsEditingBoardTitle(false)
@@ -628,21 +466,17 @@ export default function DashboardPage() {
     const { active, over } = event
     setActiveTask(null)
     if (!over) return
-
     const activeId = active.id as string
     const overId = over.id as string
     if (activeId === overId) return
-
     const activeTaskData = tasks.find((t) => t.id === activeId)
     if (!activeTaskData) return
 
     const isOverColumn = columns.some((c) => c.id === overId)
     const overTask = tasks.find((t) => t.id === overId)
-
     let newColumnId = activeTaskData.column_id
     if (isOverColumn) newColumnId = overId
     else if (overTask) newColumnId = overTask.column_id
-
     if (newColumnId === activeTaskData.column_id) return
 
     setTasks((prev) => prev.map((t) => (t.id === activeId ? { ...t, column_id: newColumnId } : t)))
@@ -667,16 +501,7 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-zinc-950 via-zinc-950 to-violet-950/40 text-white">
-      <Toaster
-        position="bottom-right"
-        toastOptions={{
-          style: {
-            background: '#18181b',
-            color: '#fff',
-            border: '1px solid #3f3f46',
-          },
-        }}
-      />
+      <Toaster position="bottom-right" toastOptions={{ style: { background: '#18181b', color: '#fff', border: '1px solid #3f3f46' } }} />
 
       <header className="border-b border-zinc-800/60 bg-zinc-950/70 backdrop-blur-md sticky top-0 z-20">
         <div className="px-6 py-3 flex items-center justify-between gap-4">
@@ -685,37 +510,71 @@ export default function DashboardPage() {
               NovaFlow
             </h1>
 
-            {board && (
-              <div className="flex items-center gap-2">
-                <span className="text-zinc-600">/</span>
-                {isEditingBoardTitle ? (
-                  <input
-                    type="text"
-                    value={boardTitleInput}
-                    onChange={(e) => setBoardTitleInput(e.target.value)}
-                    onBlur={handleSaveBoardTitle}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') handleSaveBoardTitle()
-                      if (e.key === 'Escape') {
-                        setBoardTitleInput(board.title)
-                        setIsEditingBoardTitle(false)
-                      }
-                    }}
-                    className="bg-zinc-800 border border-violet-500 rounded-lg px-2 py-1 text-sm text-white focus:outline-none max-w-[180px]"
-                    autoFocus
-                  />
-                ) : (
-                  <button
-                    onClick={() => setIsEditingBoardTitle(true)}
-                    className="text-zinc-300 hover:text-white text-sm font-medium flex items-center gap-1.5 group"
-                    title="Editar nombre del tablero"
+            {/* Selector de tableros */}
+            <div className="relative" ref={boardMenuRef}>
+              <button
+                onClick={() => setShowBoardMenu(!showBoardMenu)}
+                className="flex items-center gap-2 px-3 py-1.5 bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-800 rounded-xl text-sm text-zinc-300 hover:text-white transition-all"
+              >
+                <Layout size={14} />
+                <span className="max-w-[140px] truncate">{board?.title || 'Tablero'}</span>
+                <ChevronDown size={14} className={`transition-transform ${showBoardMenu ? 'rotate-180' : ''}`} />
+              </button>
+
+              <AnimatePresence>
+                {showBoardMenu && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    className="absolute top-full left-0 mt-2 w-64 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl overflow-hidden z-50"
                   >
-                    {board.title}
-                    <Pencil size={12} className="opacity-0 group-hover:opacity-100 transition-opacity text-zinc-500" />
-                  </button>
+                    <div className="p-2 max-h-60 overflow-y-auto">
+                      {boards.map((b) => (
+                        <button
+                          key={b.id}
+                          onClick={() => handleSwitchBoard(b)}
+                          className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+                            b.id === board?.id
+                              ? 'bg-violet-600/20 text-violet-300'
+                              : 'text-zinc-300 hover:bg-zinc-800 hover:text-white'
+                          }`}
+                        >
+                          {b.title}
+                        </button>
+                      ))}
+                    </div>
+
+                    <div className="border-t border-zinc-800 p-2">
+                      {showNewBoardInput ? (
+                        <div className="space-y-2">
+                          <input
+                            type="text"
+                            value={newBoardTitle}
+                            onChange={(e) => setNewBoardTitle(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && handleCreateBoard()}
+                            placeholder="Nombre del tablero..."
+                            className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-violet-500"
+                            autoFocus
+                          />
+                          <div className="flex gap-2">
+                            <button onClick={handleCreateBoard} className="flex-1 bg-violet-600 hover:bg-violet-500 text-white text-xs py-1.5 rounded-lg transition-colors">Crear</button>
+                            <button onClick={() => { setShowNewBoardInput(false); setNewBoardTitle('') }} className="px-3 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs py-1.5 rounded-lg transition-colors">Cancelar</button>
+                          </div>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => setShowNewBoardInput(true)}
+                          className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
+                        >
+                          <Plus size={14} /> Nuevo tablero
+                        </button>
+                      )}
+                    </div>
+                  </motion.div>
                 )}
-              </div>
-            )}
+              </AnimatePresence>
+            </div>
           </div>
 
           <PomodoroTimer />
@@ -725,10 +584,7 @@ export default function DashboardPage() {
               <p className="text-sm text-zinc-300">{user?.user_metadata?.full_name || 'Usuario'}</p>
               <p className="text-xs text-zinc-500">{user?.email}</p>
             </div>
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-2 px-3 py-2 bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-800 rounded-xl text-sm text-zinc-300 hover:text-white transition-all"
-            >
+            <button onClick={handleLogout} className="flex items-center gap-2 px-3 py-2 bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-800 rounded-xl text-sm text-zinc-300 hover:text-white transition-all">
               <LogOut size={15} />
               <span className="hidden sm:inline">Salir</span>
             </button>
@@ -764,56 +620,28 @@ export default function DashboardPage() {
             <div className="w-80 shrink-0">
               {showColumnInput ? (
                 <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-zinc-900/70 backdrop-blur border border-zinc-800 rounded-2xl p-4">
-                  <input
-                    type="text"
-                    value={newColumnTitle}
-                    onChange={(e) => setNewColumnTitle(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleCreateColumn()}
-                    placeholder="Nombre de la columna..."
-                    className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2.5 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-violet-500"
-                    autoFocus
-                  />
+                  <input type="text" value={newColumnTitle} onChange={(e) => setNewColumnTitle(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleCreateColumn()} placeholder="Nombre de la columna..." className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2.5 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-violet-500" autoFocus />
                   <div className="flex gap-2 mt-3">
-                    <button onClick={handleCreateColumn} className="flex-1 bg-violet-600 hover:bg-violet-500 text-white text-sm py-2 rounded-xl transition-colors font-medium">
-                      Agregar
-                    </button>
-                    <button
-                      onClick={() => {
-                        setShowColumnInput(false)
-                        setNewColumnTitle('')
-                      }}
-                      className="px-4 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-sm py-2 rounded-xl transition-colors"
-                    >
-                      Cancelar
-                    </button>
+                    <button onClick={handleCreateColumn} className="flex-1 bg-violet-600 hover:bg-violet-500 text-white text-sm py-2 rounded-xl transition-colors font-medium">Agregar</button>
+                    <button onClick={() => { setShowColumnInput(false); setNewColumnTitle('') }} className="px-4 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-sm py-2 rounded-xl transition-colors">Cancelar</button>
                   </div>
                 </motion.div>
               ) : (
-                <button
-                  onClick={() => setShowColumnInput(true)}
-                  className="w-full h-14 bg-zinc-900/30 border-2 border-dashed border-zinc-700 rounded-2xl flex items-center justify-center gap-2 text-zinc-500 hover:text-white hover:border-zinc-500 hover:bg-zinc-900/50 transition-all"
-                >
-                  <Plus size={18} />
-                  Nueva columna
+                <button onClick={() => setShowColumnInput(true)} className="w-full h-14 bg-zinc-900/30 border-2 border-dashed border-zinc-700 rounded-2xl flex items-center justify-center gap-2 text-zinc-500 hover:text-white hover:border-zinc-500 hover:bg-zinc-900/50 transition-all">
+                  <Plus size={18} /> Nueva columna
                 </button>
               )}
             </div>
           </div>
 
           <DragOverlay>
-            {activeTask ? (
-              <div className="bg-zinc-800 border-2 border-violet-500 rounded-xl p-3.5 text-sm shadow-2xl opacity-95 rotate-1 scale-105">
-                {activeTask.title}
-              </div>
-            ) : null}
+            {activeTask ? <div className="bg-zinc-800 border-2 border-violet-500 rounded-xl p-3.5 text-sm shadow-2xl opacity-95 rotate-1 scale-105">{activeTask.title}</div> : null}
           </DragOverlay>
         </DndContext>
       </main>
 
       <AnimatePresence>
-        {editingTask && (
-          <EditTaskModal task={editingTask} onClose={() => setEditingTask(null)} onSave={handleSaveTask} />
-        )}
+        {editingTask && <EditTaskModal task={editingTask} onClose={() => setEditingTask(null)} onSave={handleSaveTask} />}
       </AnimatePresence>
     </div>
   )
