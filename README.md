@@ -45,3 +45,24 @@ NovaFlow es una aplicación web de productividad tipo Kanban, diseñada para org
 ```bash
 git clone https://github.com/difepare/novaflow.git
 cd novaflow
+
+novaflow/
+├── app/
+│   ├── page.tsx              # Login
+│   ├── login/page.tsx        # Login alterno
+│   ├── dashboard/page.tsx    # Tablero principal
+│   └── layout.tsx
+├── lib/
+│   └── supabase.ts           # Cliente de Supabase
+├── public/
+├── .env.local
+└── README.md
+
+🎯 Objetivo del proyecto
+NovaFlow nació como un proyecto de aprendizaje y portafolio, con el objetivo de construir una herramienta real de productividad desde cero, aplicando buenas prácticas de frontend moderno, autenticación y base de datos.
+No busca competir con Trello o Monday.
+Busca ser simple, enfocada y útil.
+
+👨‍💻 Autor
+Diego F. Palomino
+GitHub: difepare
